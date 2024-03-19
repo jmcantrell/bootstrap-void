@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+lvremove --verbose "$INSTALL_LVM_VG_NAME"
+vgremove --verbose "$INSTALL_LVM_VG_NAME"
+pvremove --verbose "$INSTALL_LVM_DEVICE"

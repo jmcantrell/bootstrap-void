@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ -v INSTALL_KEYMAP ]]; then
+    loadkeys "$INSTALL_KEYMAP"
+fi
+
+if [[ -v INSTALL_FONT ]]; then
+    setfont "$INSTALL_FONT"
+fi

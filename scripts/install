@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+localize
+
+partition
+
+if ((INSTALL_DEVICE_IS_LUKS)); then
+    luks-format
+    luks-open
+fi
+
+lvm-create
+
+swap-create
+swap-open
+
+fs-format
+fs-mount
+
+if ((INSTALL_DEVICE_IS_LUKS)); then
+    luks-addkey
+fi
+
+packages-install
+chroot-install
+boot-install
+initrd-install

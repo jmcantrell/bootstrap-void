@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+packages=$(mktemp -t packages.XXXXXXXXXX)
+printf -v cleanup "rm %q" "$packages"
+trap '$cleanup' EXIT
+
+add_packages() {
+    printf "%s\n" "$@" >>"$packages"
+}
+
+add_packages \
+    base-system \
+    grub \
+    lvm2 \
+    socklog-void \
+    avahi \
+    nss-mdns \
+    chrony \
+    cronie
+
+case $INSTALL_BOOT_FIRMWARE in
+uefi) add_packages grub-"$(uname -m)"-efi ;;
+esac
+
+if ((INSTALL_DEVICE_IS_LUKS)); then
+    add_packages cryptsetup
+fi
+
+if [[ -v INSTALL_SUDOER_SHELL ]]; then
+    add_packages "${INSTALL_SUDOER_SHELL##*/}"
+fi
+
+list "$INSTALL_CONFIG"/packages >>"$packages"
+
+sort -u "$packages"

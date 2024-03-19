@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+while read -r name path; do
+    subvolume_mount=$INSTALL_MOUNT/${path#/}
+    mkdir -p "$subvolume_mount"
+    mount --verbose --options \
+        "${INSTALL_FS_MOUNT_OPTIONS:+$INSTALL_FS_MOUNT_OPTIONS,}subvol=$name" \
+        "$INSTALL_ROOT_DEVICE" "$subvolume_mount"
+done < <(list-subvolumes)
+
+if [[ $INSTALL_BOOT_FIRMWARE == uefi ]]; then
+    uefi_mount=$INSTALL_MOUNT/${INSTALL_UEFI_MOUNT#/}
+    mkdir -p "$uefi_mount"
+    mount --verbose "$INSTALL_BOOT_DEVICE" "$uefi_mount"
+fi

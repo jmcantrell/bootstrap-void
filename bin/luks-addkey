@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Slot 0 is the initial passphrase.
+# Slot 1 is reserved for the keyfile.
+keyfile_slot=1
+
+# Ensure the reserved key slot is available, i.e., kill it if occupied.
+if cryptsetup luksDump "$INSTALL_LUKS_DEVICE" | grep -q "^Key Slot $keyfile_slot: ENABLED"; then
+    cryptsetup luksKillSlot "$INSTALL_LUKS_DEVICE" "$keyfile_slot" <<<"$INSTALL_LUKS_PASSPHRASE"
+fi
+
+keyfile=$INSTALL_MOUNT/${INSTALL_LUKS_ROOT_KEYFILE#/}
+
+luks-createkey "$keyfile"
+
+cryptsetup luksAddKey "$INSTALL_LUKS_DEVICE" "$keyfile" <<<"$INSTALL_LUKS_PASSPHRASE"

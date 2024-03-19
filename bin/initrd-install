@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if ((INSTALL_DEVICE_IS_LUKS)); then
+    printf 'install_items+=" %s /etc/crypttab "\n' "$INSTALL_LUKS_ROOT_KEYFILE" >"$INSTALL_MOUNT"/etc/dracut.conf.d/10-crypt.conf
+fi
+
+xchroot "$INSTALL_MOUNT" xbps-reconfigure -fa

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+swapoff --verbose "$INSTALL_SWAP_DEVICE"

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if ((INSTALL_DEVICE_IS_LUKS)); then
+    luks-open
+fi
+
+swap-open
+fs-mount

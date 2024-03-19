@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+pvcreate --verbose -ff --yes "$INSTALL_LVM_DEVICE"
+vgcreate --verbose "$INSTALL_LVM_VG_NAME" "$INSTALL_LVM_DEVICE"
+
+lvcreate --verbose --wipesignatures y --yes \
+    --name "$INSTALL_LVM_SWAP_LV_NAME" \
+    --size "$INSTALL_LVM_SWAP_LV_SIZE" \
+    "$INSTALL_LVM_VG_NAME"
+
+lvcreate --verbose --wipesignatures y --yes \
+    --name "$INSTALL_LVM_ROOT_LV_NAME" \
+    --extents "$INSTALL_LVM_ROOT_LV_EXTENTS" \
+    "$INSTALL_LVM_VG_NAME"

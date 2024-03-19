@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# Execute the given script in a chroot.
+# Usage: xchroot-script DIRECTORY SCRIPT [ARGUMENT...]
+
+set -euo pipefail
+
+dir=${1:?missing directory}
+script=${2:?missing script}
+
+if ! head -n1 "$script" | grep -q "^#!"; then
+    printf "invalid script: %q (missing shebang line)\n" "$script" >&2
+    exit 1
+fi
+
+shift 2
+
+temp_script=$(mktemp -p "$dir" -t script.XXXXXXXXXX)
+printf -v cleanup "rm -v %q" "$temp_script"
+trap '$cleanup' EXIT
+
+cp -v "$script" "$temp_script"
+chmod +x "$temp_script"
+
+xchroot "$dir" /"${temp_script##*/}" "$@"

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+keyfile=${1:?missing key file}
+
+mkdir -p "$(dirname "$keyfile")"
+
+umask 777
+
+dd bs=512 count=4 if=/dev/random of="$keyfile" iflag=fullblock

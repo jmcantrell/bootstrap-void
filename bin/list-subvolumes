@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+printf "@ /\n" # the root subvolume
+
+list "$INSTALL_CONFIG"/subvolumes | sed 's/^/@/'

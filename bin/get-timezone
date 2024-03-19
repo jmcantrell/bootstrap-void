@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+default=${1:-UTC}
+
+if [[ -f /etc/localtime ]]; then
+    tz=$(realpath /etc/localtime)
+    tz=${tz#/usr/share/zoneinfo/}
+else
+    tz=$default
+fi
+
+printf "%s" "$tz"

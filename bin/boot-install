@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+cmdline_linux_default=(
+    loglevel="$INSTALL_LOGLEVEL"
+    consoleblank="$INSTALL_CONSOLEBLANK"
+    resume="$INSTALL_SWAP_DEVICE"
+    rd.lvm.vg="$INSTALL_LVM_VG_NAME"
+)
+
+if ((INSTALL_DEVICE_IS_LUKS)); then
+    cmdline_linux_default+=(rd.luks.uuid="$(blkid -s UUID -o value "$INSTALL_LUKS_DEVICE")")
+    if ((INSTALL_DEVICE_IS_SSD)); then
+        cmdline_linux_default+=(rd.luks.allow-discards)
+    fi
+fi
+
+{
+    printf "GRUB_DEFAULT=0\n"
+    printf "GRUB_TIMEOUT=5\n"
+    printf "GRUB_DISTRIBUTOR=\"Void\"\n"
+
+    if ((INSTALL_DEVICE_IS_LUKS)); then
+        printf "GRUB_ENABLE_CRYPTODISK=y\n"
+    fi
+
+    printf "GRUB_CMDLINE_LINUX_DEFAULT=\"%s\"\n" "${cmdline_linux_default[*]}"
+} >"$INSTALL_MOUNT"/etc/default/grub
+
+xchroot "$INSTALL_MOUNT" grub-install "$INSTALL_DEVICE" --recheck

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+exec sfdisk "$INSTALL_DEVICE" <<EOF
+label: gpt
+start=$INSTALL_BOOT_PART_START, size=$INSTALL_BOOT_PART_SIZE, type=$INSTALL_BOOT_PART_TYPE, name=$INSTALL_BOOT_PART_NAME
+start=$INSTALL_SYS_PART_START, size=$INSTALL_SYS_PART_SIZE, type=$INSTALL_SYS_PART_TYPE, name=$INSTALL_SYS_PART_NAME
+EOF

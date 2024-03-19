@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ -v INSTALL_HOSTNAME ]]; then
+    printf "%s\n" "$INSTALL_HOSTNAME" >"$INSTALL_MOUNT"/etc/hostname
+fi
+
+if [[ -v INSTALL_LANG ]]; then
+    sed -i "/^LANG=/s/=.*/=$INSTALL_LANG/" "$INSTALL_MOUNT"/etc/locale.conf
+    sed -i "/^#$INSTALL_LANG/s/#//" "$INSTALL_MOUNT"/etc/default/libc-locales
+    xchroot "$INSTALL_MOUNT" xbps-reconfigure -f glibc-locales
+fi
+
+if [[ -v INSTALL_KEYMAP ]]; then
+    sed -i "/^#\\?KEYMAP=/ { s/^#//; s/=.*/=$INSTALL_KEYMAP/; }" "$INSTALL_MOUNT"/etc/rc.conf
+fi
+
+if [[ -v INSTALL_FONT ]]; then
+    sed -i "/^#\\?FONT=/ { s/^#//; s/=.*/=$INSTALL_FONT/; }" "$INSTALL_MOUNT"/etc/rc.conf
+fi
+
+if [[ -v INSTALL_TIMEZONE ]]; then
+    xchroot "$INSTALL_MOUNT" ln -vsf /usr/share/zoneinfo/"$INSTALL_TIMEZONE" /etc/localtime
+fi
+
+xchroot "$INSTALL_MOUNT" hwclock --systohc --utc
+
+for service in acpid dhcpcd wpa_supplicant sshd avahi-daemon socklog-unix nanologd chronyd crond; do
+    xchroot "$INSTALL_MOUNT" ln -vsf /etc/sv/"$service" /etc/runit/runsvdir/default/
+done
+
+if ((INSTALL_DEVICE_IS_SSD)); then
+    sed -i '/[[:space:]]*#\?[[:space:]]*issue_discards\b/ { s/#[[:space:]]*//; s/0/1/; }' "$INSTALL_MOUNT"/etc/lvm/lvm.conf
+    printf '#!/bin/sh\n\nfstrim /\n' >"$INSTALL_MOUNT"/etc/cron.weekly/fstrim
+    chmod u+x "$INSTALL_MOUNT"/etc/cron.weekly/fstrim
+fi
+
+if ((INSTALL_DEVICE_IS_LUKS)); then
+    options='luks'
+    if ((INSTALL_DEVICE_IS_SSD)); then
+        options+=',discard'
+    fi
+    printf "%s UUID=%s %s %s\n" \
+        "$INSTALL_LUKS_MAPPER_NAME" \
+        "$(blkid -s UUID -o value "$INSTALL_LUKS_DEVICE")" \
+        "$INSTALL_LUKS_ROOT_KEYFILE" \
+        "$options" >"$INSTALL_MOUNT"/etc/crypttab
+fi
+
+{
+    if [[ $INSTALL_BOOT_FIRMWARE == uefi ]]; then
+        printf "UUID=%s %s vfat defaults 0 2\n" \
+            "$(blkid -s UUID -o value "$INSTALL_BOOT_DEVICE")" \
+            "$INSTALL_UEFI_MOUNT"
+    fi
+
+    while read -r name path; do
+        printf "UUID=%s %s btrfs defaults,%s,subvol=%s 0 1\n" \
+            "$(blkid -s UUID -o value "$INSTALL_ROOT_DEVICE")" "$path" \
+            "$INSTALL_FS_MOUNT_OPTIONS" "$name"
+    done < <(list-subvolumes)
+
+    options="defaults"
+    if ((INSTALL_DEVICE_IS_SSD)); then
+        options+=',discard'
+    fi
+    printf "UUID=%s swap swap %s 0 0\n" \
+        "$(blkid -s UUID -o value "$INSTALL_SWAP_DEVICE")" \
+        "$options"
+
+    printf "tmpfs /tmp tmpfs defaults,nosuid,nodev 0 0\n"
+} >"$INSTALL_MOUNT"/etc/fstab
+
+if [[ -v INSTALL_SUDOER_GROUP ]]; then
+    {
+        printf "%%%s ALL=(ALL) " "$INSTALL_SUDOER_GROUP"
+        if ((INSTALL_SUDOER_GROUP_NOPASSWD)); then
+            printf "NOPASSWD:"
+        fi
+        printf "ALL\n"
+    } >"$INSTALL_MOUNT"/etc/sudoers.d/group
+fi
+
+if [[ -v INSTALL_SUDOER_USERNAME ]]; then
+    xchroot "$INSTALL_MOUNT" useradd \
+        --create-home --groups users,"$INSTALL_SUDOER_GROUP" \
+        ${INSTALL_SUDOER_SHELL:+--shell "$INSTALL_SUDOER_SHELL"} \
+        "$INSTALL_SUDOER_USERNAME"
+
+    chpasswd -c SHA512 -R "$INSTALL_MOUNT" <<<"$INSTALL_SUDOER_USERNAME:$INSTALL_SUDOER_PASSWORD"
+    xchroot "$INSTALL_MOUNT" passwd --delete root
+else
+    chpasswd -c SHA512 -R "$INSTALL_MOUNT" <<<"root:$INSTALL_ROOT_PASSWORD"
+fi
+
+printf "blacklist pcspkr\n" >"$INSTALL_MOUNT"/etc/modprobe.d/disable-pcspkr.conf
+
+if [[ -f $INSTALL_CONFIG/install ]]; then
+    xchroot-script "$INSTALL_MOUNT" "$INSTALL_CONFIG"/install
+fi

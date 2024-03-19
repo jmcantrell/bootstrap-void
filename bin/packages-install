@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+mkdir -p "$INSTALL_MOUNT"/var/db/xbps/keys
+cp /var/db/xbps/keys/* "$INSTALL_MOUNT"/var/db/xbps/keys
+
+list-packages | XBPS_ARCH=$INSTALL_ARCH xargs xbps-install -Sy -R "$INSTALL_REPO" -r "$INSTALL_MOUNT"

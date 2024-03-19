@@ -1,0 +1,5 @@
+home       /home
+var_log    /var/log
+var_lib    /var/lib
+var_cache  /var/cache
+snapshots  /.snapshots

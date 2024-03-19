@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# TODO: Use default luks type once grub supports argon2i (luks default).
+# See grub bug report: https://savannah.gnu.org/bugs/?func=detailitem&item_id=59409
+cryptsetup open --type luks1 "$INSTALL_LUKS_DEVICE" "$INSTALL_LUKS_MAPPER_NAME" <<<"$INSTALL_LUKS_PASSPHRASE"
