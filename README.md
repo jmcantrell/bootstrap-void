@@ -221,6 +221,7 @@ fs-mount
 [lvcreate]: https://man.voidlinux.org/lvcreate.8
 [microcode]: https://docs.voidlinux.org/config/firmware.html
 [ntp]: https://docs.voidlinux.org/config/date-time.html
+[power]: https://docs.voidlinux.org/config/power-management.html
 [sfdisk]: https://man.voidlinux.org/sfdisk.8
 [ssd]: https://docs.voidlinux.org/config/ssd.html
 [wireless]: https://docs.voidlinux.org/config/network/wpa_supplicant.html
