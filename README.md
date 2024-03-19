@@ -180,7 +180,7 @@ By default, `./config/packages` does not exist, i.e., no extra packages are inst
 
 #### `$INSTALL_CONFIG/install`
 
-This script, if it exists, will be run in a chroot just after packages have been installed.
+This script, if it exists, will be run in a chroot just before finalization steps (boot loader configuration and initrd creation)
 
 ## Installation
 
