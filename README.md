@@ -14,11 +14,7 @@ If enabled, [full disk encryption][fde] is handled by LUKS, using the LVM on LUK
 
 The file system is formatted using btrfs with subvolumes (see `./config/subvolumes`).
 
-[Processor microcode updates][microcode] will be installed according to the system's CPU vendor.
-
 Any wireless connections created in the installation environment will be persisted to the installed system.
-
-A privileged user, i.e., a user allowed to use `sudo`, will be created and the root account will be disabled.
 
 The following services are installed and enabled:
 

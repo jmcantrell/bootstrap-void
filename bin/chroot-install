@@ -94,6 +94,8 @@ else
     chpasswd -c SHA512 -R "$INSTALL_MOUNT" <<<"root:$INSTALL_ROOT_PASSWORD"
 fi
 
+cp {,"$INSTALL_MOUNT"}/etc/wpa_supplicant/wpa_supplicant.conf
+
 printf "blacklist pcspkr\n" >"$INSTALL_MOUNT"/etc/modprobe.d/disable-pcspkr.conf
 
 if [[ -f $INSTALL_CONFIG/install ]]; then
