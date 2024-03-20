@@ -11,7 +11,7 @@ if cryptsetup luksDump "$INSTALL_LUKS_DEVICE" | grep -q "^Key Slot $keyfile_slot
     cryptsetup luksKillSlot "$INSTALL_LUKS_DEVICE" "$keyfile_slot" <<<"$INSTALL_LUKS_PASSPHRASE"
 fi
 
-keyfile=$INSTALL_MOUNT/${INSTALL_LUKS_ROOT_KEYFILE#/}
+keyfile=$INSTALL_MOUNT/${INSTALL_LUKS_KEYFILE#/}
 
 luks-createkey "$keyfile"
 

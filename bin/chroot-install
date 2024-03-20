@@ -44,7 +44,7 @@ if ((INSTALL_DEVICE_IS_LUKS)); then
     printf "%s UUID=%s %s %s\n" \
         "$INSTALL_LUKS_MAPPER_NAME" \
         "$(blkid -s UUID -o value "$INSTALL_LUKS_DEVICE")" \
-        "$INSTALL_LUKS_ROOT_KEYFILE" \
+        "$INSTALL_LUKS_KEYFILE" \
         "$options" >"$INSTALL_MOUNT"/etc/crypttab
 fi
 
@@ -98,6 +98,8 @@ cp {,"$INSTALL_MOUNT"}/etc/wpa_supplicant/wpa_supplicant.conf
 
 printf "blacklist pcspkr\n" >"$INSTALL_MOUNT"/etc/modprobe.d/disable-pcspkr.conf
 
-if [[ -f $INSTALL_CONFIG/install ]]; then
-    xchroot-script "$INSTALL_MOUNT" "$INSTALL_CONFIG"/install
+if [[ -f $INSTALL_CONFIG/install && -x $INSTALL_CONFIG/install ]]; then
+    cp "$INSTALL_CONFIG"/install "$INSTALL_MOUNT"/script
+    xchroot "$INSTALL_MOUNT" /script
+    rm "$INSTALL_MOUNT"/script
 fi

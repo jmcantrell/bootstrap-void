@@ -122,7 +122,7 @@ The following variables can be defined anywhere, as long as they're exported in 
 
 - `INSTALL_DEVICE_IS_LUKS`: A boolean dictating whether or not to use full disk encryption
 - `INSTALL_LUKS_PASSPHRASE`: The passphrase to use for full disk encryption (default: `hunter2`, occupies key slot 0)
-- `INSTALL_LUKS_ROOT_KEYFILE`: The path of the keyfile used to allow the initrd to unlock the root file system without asking for the passphrase again (default: `/crypto_keyfile.bin`, which is the default value used by `mkinitcpio`, occupies key slot 1)
+- `INSTALL_LUKS_KEYFILE`: The path of the keyfile used to allow the initrd to unlock the system without asking for the passphrase again (default: `/boot/volume.key`, which is the default value used by `mkinitcpio`, occupies key slot 1)
 - `INSTALL_LUKS_MAPPER_NAME`: The mapper name used for the encrypted partition (default: `sys`)
 
 #### Volume Management
